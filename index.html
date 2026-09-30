@@ -360,7 +360,10 @@ const PLAY_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentC
 const LOCK_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 const DOC_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>';
 
-function isOpen(season) { return PREVIEW || Date.now() >= Date.parse(season.opensAt); }
+// openMode в content.js: "all" открывает все сезоны сразу, иначе по датам.
+function isOpen(season) {
+  return PREVIEW || window.DOLGAYA.openMode === 'all' || Date.now() >= Date.parse(season.opensAt);
+}
 function openDateText(iso) {
   try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', timeZone: 'Europe/Moscow' }).format(new Date(iso)); }
   catch { return iso.slice(0, 10); }
