@@ -58,7 +58,7 @@ window.DOLGAYA = {
      "post": 153,
      "title": "Это ещё не любовь, это тест-драйв",
      "duration": "37:55",
-     "kinescope": null,
+     "kinescope": "3mK95wCfJbLLphFFVhvheQ",
      "timecodes": [
       [
        0,
