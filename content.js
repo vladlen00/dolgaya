@@ -132,7 +132,7 @@ window.DOLGAYA = {
      "post": 647,
      "title": "Когда вы - это «мы»",
      "duration": "13:30",
-     "kinescope": null,
+     "kinescope": "4AbJmGXrmA7GHZZLMGEEUc",
      "timecodes": [
       [
        0,
@@ -176,7 +176,7 @@ window.DOLGAYA = {
      "post": 649,
      "title": "Мягкая снаружи, жёсткая внутри",
      "duration": "25:48",
-     "kinescope": null,
+     "kinescope": "q2YPHLbodx4cRTVvLqGLzT",
      "timecodes": [
       [
        0,
@@ -224,7 +224,7 @@ window.DOLGAYA = {
      "post": 652,
      "title": "4 способа установления личных границ",
      "duration": "51:49",
-     "kinescope": null,
+     "kinescope": "fFY5p4ousA2RwX6dXBhqYy",
      "timecodes": [
       [
        0,
