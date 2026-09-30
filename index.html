@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Игра в долгую · irena.bio</title>
+<script src="telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="content.js?v=1"></script>
+<style>
+/* Палитра снята с обложек курса: тёмный бордо, пыльная роза, беж. */
+:root{
+  --bg:#140d0e; --cover:#1f1416; --card:#1b1214; --accent:#c98f89; --wine:#6e2b35;
+  --text:#f3ece8; --muted:#9a8b88; --hair:rgba(243,236,232,0.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;min-height:100%;background:var(--bg);color:var(--text);
+  font-family:'Manrope',sans-serif;overflow-x:hidden;-webkit-tap-highlight-color:transparent;}
+.app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+.serif{font-family:'Cormorant Garamond',serif;}
+
+/* Шапка */
+.cover{position:relative;padding:44px 24px 30px;overflow:hidden;
+  background:radial-gradient(120% 90% at 85% 10%,rgba(201,143,137,0.28),transparent 60%),
+             linear-gradient(180deg,#2a1a1d,var(--bg));}
+.cover-kicker{display:inline-block;padding:3px 12px;border-radius:20px;background:rgba(110,43,53,0.7);
+  font-size:0.72rem;font-weight:600;letter-spacing:0.04em;color:#f0d9d4;}
+.cover-title{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:2.6rem;line-height:1;
+  text-transform:uppercase;letter-spacing:0.02em;margin-top:16px;}
+.cover-sub{font-size:0.7rem;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-top:10px;}
+
+/* Загрузка */
+.loading{display:none;align-items:center;justify-content:center;flex:1;padding:48px;}
+.loading.active{display:flex;}
+.loading-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 1.2s infinite;}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+
+.screen{display:none;flex-direction:column;flex:1;}
+.screen.active{display:flex;}
+#listScreen{padding:8px 20px 44px;}
+
+/* Вступление */
+.intro-card{display:flex;align-items:center;gap:14px;padding:16px;margin-top:6px;border-radius:18px;
+  background:linear-gradient(135deg,rgba(110,43,53,0.55),rgba(201,143,137,0.18));border:1px solid rgba(201,143,137,0.25);cursor:pointer;}
+.intro-card:active{opacity:.6;}
+.intro-label{font-size:0.68rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);}
+.intro-name{font-family:'Cormorant Garamond',serif;font-size:1.45rem;line-height:1.1;margin-top:4px;}
+
+/* Сезон */
+.season{margin-top:14px;border-radius:18px;background:var(--card);border:1px solid var(--hair);overflow:hidden;}
+.season-head{display:flex;align-items:center;gap:12px;padding:18px 18px;cursor:pointer;}
+.season-num{flex-shrink:0;width:26px;font-size:0.72rem;font-weight:700;color:var(--muted);}
+.season-titles{flex:1;min-width:0;}
+.season-name{font-family:'Cormorant Garamond',serif;font-size:1.75rem;line-height:1;}
+.season-desc{font-size:0.8rem;color:var(--muted);margin-top:5px;}
+.season-chev{flex-shrink:0;width:9px;height:9px;border-right:2px solid var(--accent);border-bottom:2px solid var(--accent);
+  transform:rotate(45deg);margin-top:-4px;transition:transform .2s;}
+.season.open .season-chev{transform:rotate(225deg);margin-top:4px;}
+.season-body{display:none;padding:0 18px 12px;}
+.season.open .season-body{display:block;}
+.season.locked .season-head{cursor:default;}
+.season.locked .season-name{color:rgba(243,236,232,0.55);}
+.season-soon{flex-shrink:0;font-size:0.72rem;font-weight:600;color:var(--accent);text-align:right;line-height:1.3;}
+.season-intro{font-size:0.86rem;line-height:1.6;color:rgba(243,236,232,0.75);white-space:pre-line;padding-bottom:6px;}
+
+.row{display:flex;align-items:center;gap:14px;padding:15px 0;border-top:1px solid var(--hair);cursor:pointer;}
+.row:active{opacity:.55;}
+.row-info{flex:1;min-width:0;}
+.row-kind{font-size:0.62rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);}
+.row-name{font-weight:600;font-size:0.95rem;line-height:1.35;margin-top:3px;}
+.row-dur{font-size:0.72rem;color:var(--muted);margin-top:4px;}
+.row-ic{flex-shrink:0;width:34px;height:34px;border-radius:50%;border:1px solid var(--accent);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;}
+.row.pending{cursor:default;opacity:.55;}
+
+/* Экран урока */
+.back{display:inline-flex;align-items:center;gap:9px;align-self:flex-start;margin:14px 20px 10px;padding:0;
+  background:none;border:none;cursor:pointer;color:var(--text);font-family:inherit;font-weight:600;font-size:0.9rem;}
+.back::before{content:'';width:8px;height:8px;border-left:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(45deg);}
+.player-wrap{position:relative;width:100%;aspect-ratio:9/16;max-height:78vh;margin:0 auto;background:#000;flex-shrink:0;}
+.player-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
+.page{padding:18px 22px 40px;}
+.page-kind{font-size:0.66rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:1.9rem;line-height:1.08;margin-top:6px;}
+.page-meta{font-size:0.78rem;color:var(--muted);margin-top:8px;}
+.page-text{margin-top:16px;font-size:0.92rem;line-height:1.65;color:rgba(243,236,232,0.85);white-space:pre-line;}
+
+details.toc{margin-top:18px;}
+details.toc summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;
+  padding:12px 16px;border-radius:14px;background:var(--card);border:1px solid var(--hair);font-weight:600;font-size:0.86rem;}
+details.toc summary::-webkit-details-marker{display:none;}
+details.toc summary::after{content:'';width:8px;height:8px;border-right:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(45deg);margin-top:-3px;}
+details.toc[open] summary::after{transform:rotate(225deg);margin-top:3px;}
+.tc{display:flex;gap:12px;width:100%;padding:10px 4px;background:none;border:none;border-bottom:1px solid var(--hair);
+  color:var(--text);font-family:inherit;font-size:0.86rem;line-height:1.4;text-align:left;cursor:pointer;}
+.tc:active{opacity:.55;}
+.tc b{flex-shrink:0;width:44px;color:var(--accent);font-weight:600;}
+
+/* Текст статьи (перенесено с telegra.ph) */
+.article{margin-top:16px;font-size:0.92rem;line-height:1.65;color:rgba(243,236,232,0.85);}
+.article p,.article blockquote,.article li{white-space:pre-line;}
+.article p{margin:0 0 12px;}
+.article h3,.article h4{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:1.35rem;line-height:1.2;color:var(--text);margin:22px 0 10px;}
+.article blockquote{margin:14px 0;padding:10px 14px;border-left:2px solid var(--accent);background:rgba(201,143,137,0.08);border-radius:0 10px 10px 0;}
+.article ol,.article ul{margin:0 0 12px 20px;}
+.article strong,.article b{color:var(--text);}
+
+.btn{display:block;width:100%;margin-top:22px;padding:15px;border:none;border-radius:15px;background:var(--wine);
+  color:#fff;font-family:inherit;font-weight:600;font-size:0.95rem;text-align:center;text-decoration:none;cursor:pointer;}
+.btn:active{opacity:.7;}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Возврат в веб-приложение: только при веб-заходе, в Телеграме скрыта (там возврат родной). -->
+  <button id="appBackBtn" type="button" onclick="location.href='https://app.irenabio.com'"
+    style="display:none;align-items:center;gap:6px;margin:14px 20px 0;padding:8px 14px;background:rgba(0,0,0,0.28);border:1px solid rgba(243,236,232,0.28);border-radius:12px;color:#f3ece8;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">← В приложение</button>
+
+  <div class="screen active" id="homeWrap" style="padding:0">
+    <header class="cover">
+      <span class="cover-kicker">Подарок участницам клуба</span>
+      <h1 class="cover-title">Игра в долгую</h1>
+      <div class="cover-sub">искусство быть вместе</div>
+    </header>
+    <div class="loading active" id="loadingScreen"><div class="loading-dot"></div></div>
+    <div class="screen" id="listScreen"></div>
+  </div>
+
+  <div class="screen" id="lessonScreen">
+    <button class="back" type="button" onclick="goHome()">Назад</button>
+    <div class="player-wrap">
+      <iframe id="videoFrame" src="" allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer; clipboard-write; screen-wake-lock;" allowfullscreen></iframe>
+    </div>
+    <div class="page">
+      <div class="page-kind" id="lessonKind"></div>
+      <div class="page-title" id="lessonTitle"></div>
+      <div class="page-meta" id="lessonMeta"></div>
+      <div class="page-text" id="lessonAbout"></div>
+      <details class="toc" id="lessonToc">
+        <summary>Содержание урока</summary>
+        <div id="lessonTocList"></div>
+      </details>
+    </div>
+  </div>
+
+  <div class="screen" id="materialScreen">
+    <button class="back" type="button" onclick="goHome()">Назад</button>
+    <div class="page">
+      <div class="page-kind" id="matKind"></div>
+      <div class="page-title" id="matTitle"></div>
+      <div class="page-text" id="matText"></div>
+      <div class="article" id="matArticle"></div>
+      <a class="btn" id="matPdf" href="#" style="display:none">Открыть PDF</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ====== Telegram Mini App access control (как в glutes: тот же клуб, те же две двери) ======
+const IRENA_VERIFY_URL = "https://kjzxrpwqyyjcykwbqskn.supabase.co/functions/v1/verify-access";
+const IRENA_TOKEN_KEY = "irena_access_token";
+const IRENA_TOKEN_EXPIRES_KEY = "irena_access_token_expires_at";
+const IRENA_SUBSCRIBE_URL = "https://t.me/Biochakirena_bot";
+const IRENA_APP_VERIFY_URL = "https://kjzxrpwqyyjcykwbqskn.supabase.co/functions/v1/verify-app-token";
+const APP_VERIFY_URL_PROXY = "https://biohack-tracker-blond.vercel.app/sb/functions/v1/verify-app-token";
+const IRENA_WEB_APP_URL = "https://app.irenabio.com/";
+const APP_VERIFY_MAX_ATTEMPTS = 3;
+const APP_VERIFY_RETRY_MS = [1000, 2000];
+function irenaSleepA(ms) { return new Promise((r) => setTimeout(r, ms)); }
+// Фолбэк-прокси на verify-access через biohack (Vercel rewrite /sb -> supabase). URL абсолютный.
+const VERIFY_URL_PROXY = "https://biohack-tracker-blond.vercel.app/sb/functions/v1/verify-access";
+const MAX_ATTEMPTS = 3;
+const RETRY_DELAYS_MS = [1000, 2000];
+function irenaSleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+
+function irenaGetStoredToken() {
+  try {
+    const token = localStorage.getItem(IRENA_TOKEN_KEY);
+    const expiresAt = parseInt(localStorage.getItem(IRENA_TOKEN_EXPIRES_KEY) || "0", 10);
+    if (!token || !expiresAt) return null;
+    if (Date.now() >= expiresAt - 60000) return null;
+    return token;
+  } catch { return null; }
+}
+function irenaStoreToken(token, ttl) {
+  try {
+    localStorage.setItem(IRENA_TOKEN_KEY, token);
+    localStorage.setItem(IRENA_TOKEN_EXPIRES_KEY, String(Date.now() + ttl * 1000));
+  } catch {}
+}
+// ДВЕРЬ 2: веб-токен из фрагмента URL (заход с платформы, где нет Telegram initData).
+function irenaConsumeWebToken() {
+  try {
+    var raw = location.hash || "";
+    if (raw.charAt(0) === "#") raw = raw.slice(1);
+    if (!raw) return false;
+    var params = new URLSearchParams(raw);
+    var token = params.get("irena_token");
+    if (!token) return false;
+    var ttl = parseInt(params.get("exp") || "0", 10);
+    if (!ttl || ttl <= 0) ttl = 900;
+    irenaStoreToken(token, ttl);
+    params.delete("irena_token");
+    params.delete("exp");
+    var rest = params.toString();
+    history.replaceState(null, "", location.pathname + location.search + (rest ? "#" + rest : ""));
+    return true;
+  } catch { return false; }
+}
+function irenaGetInitData() {
+  try {
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {
+      return window.Telegram.WebApp.initData;
+    }
+  } catch {}
+  return null;
+}
+function isConnectionReason(reason) {
+  return reason === "network_error" || reason === "init_failed" ||
+    (typeof reason === "string" && reason.indexOf("error_5") === 0);
+}
+
+function irenaShowBlocked(reason) {
+  document.body.innerHTML = '';
+  const overlay = document.createElement("div");
+  overlay.style.cssText = "position:fixed;inset:0;z-index:999999;background:#140d0e;color:#f3ece8;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;font-family:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;text-align:center;";
+  if (isConnectionReason(reason)) {
+    overlay.innerHTML = `
+    <div style="font-size:60px;margin-bottom:22px;">📡</div>
+    <div style="font-size:22px;font-weight:700;margin-bottom:12px;">Не получилось подключиться</div>
+    <div style="font-size:15px;line-height:1.6;color:rgba(243,236,232,0.6);margin-bottom:30px;max-width:340px;white-space:pre-line;text-align:left;">С подпиской всё в порядке - приложение просто не смогло достучаться до сервера. Обычно дело в сети или VPN.
+
+Что попробовать:
+- включить VPN, а если уже включён - сменить на другой (не все работают одинаково)
+- переключить Wi-Fi на мобильный интернет или наоборот
+- открыть из дома
+
+Потом нажми «Обновить».</div>
+    <button type="button" onclick="location.reload()" style="display:inline-block;padding:14px 32px;background:#6e2b35;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">Обновить</button>
+    ${reason ? `<div style="position:absolute;bottom:12px;left:0;right:0;font-size:10px;color:rgba(243,236,232,0.14);text-align:center;">${reason}</div>` : ''}
+    `;
+  } else {
+    overlay.innerHTML = `
+    <div style="font-size:60px;margin-bottom:22px;">🔒</div>
+    <div style="font-size:22px;font-weight:700;margin-bottom:12px;">Доступ закрыт</div>
+    <div style="font-size:15px;line-height:1.6;color:rgba(243,236,232,0.6);margin-bottom:30px;max-width:340px;">Курс «Игра в долгую» доступен участницам клуба Ирены Пол. Для доступа перейди в бот и оформи подписку.</div>
+    <a href="${irenaGetInitData() ? IRENA_SUBSCRIBE_URL : IRENA_WEB_APP_URL}" ${irenaGetInitData() ? 'target="_blank" rel="noopener"' : ""} style="display:inline-block;padding:14px 32px;background:#6e2b35;color:#fff;border-radius:14px;font-size:15px;font-weight:600;text-decoration:none;">${irenaGetInitData() ? "Оформить подписку" : "Открыть приложение"}</a>
+    ${reason ? `<div style="position:absolute;bottom:12px;left:0;right:0;font-size:10px;color:rgba(243,236,232,0.14);text-align:center;">${reason}</div>` : ''}
+    `;
+  }
+  document.body.appendChild(overlay);
+}
+async function irenaRequestVerify(initData) {
+  let lastError = null;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const url = attempt === 1 ? IRENA_VERIFY_URL : VERIFY_URL_PROXY;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData }),
+      });
+      const data = await res.json().catch(() => ({}));
+      return { res, data };
+    } catch (e) {
+      lastError = e;
+      if (attempt < MAX_ATTEMPTS) await irenaSleep(RETRY_DELAYS_MS[attempt - 1]);
+    }
+  }
+  console.error("verify-access: all attempts failed:", lastError);
+  return { networkError: true };
+}
+function irenaShowChecking(show) {
+  try {
+    let el = document.getElementById("irena-checking");
+    if (!show) { if (el) el.remove(); return; }
+    if (el) return;
+    el = document.createElement("div");
+    el.id = "irena-checking";
+    el.style.cssText = "position:fixed;inset:0;z-index:999998;background:#140d0e;color:#f3ece8;display:flex;align-items:center;justify-content:center;font-family:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:16px;";
+    el.textContent = "Проверяем доступ...";
+    document.body.appendChild(el);
+  } catch {}
+}
+function irenaShowWebFail(reason) {
+  document.body.innerHTML = '';
+  const overlay = document.createElement("div");
+  overlay.style.cssText = "position:fixed;inset:0;z-index:999999;background:#140d0e;color:#f3ece8;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;font-family:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;text-align:center;";
+  overlay.innerHTML = `
+    <div style="font-size:60px;margin-bottom:22px;">📡</div>
+    <div style="font-size:22px;font-weight:700;margin-bottom:12px;">Не получилось проверить доступ</div>
+    <div style="font-size:15px;line-height:1.6;color:rgba(243,236,232,0.6);margin-bottom:30px;max-width:340px;">С подпиской всё в порядке - приложение просто не достучалось до сервера. Попробуй включить VPN или сменить сеть, потом нажми «Обновить».</div>
+    <button type="button" onclick="location.reload()" style="display:inline-block;padding:14px 32px;background:#6e2b35;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">Обновить</button>
+    ${reason ? `<div style="position:absolute;bottom:12px;left:0;right:0;font-size:10px;color:rgba(243,236,232,0.14);text-align:center;">${reason}</div>` : ''}
+  `;
+  document.body.appendChild(overlay);
+}
+async function irenaRequestVerifyToken(token) {
+  let lastError = null;
+  for (let attempt = 1; attempt <= APP_VERIFY_MAX_ATTEMPTS; attempt++) {
+    try {
+      const url = attempt === 1 ? IRENA_APP_VERIFY_URL : APP_VERIFY_URL_PROXY;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+      if (res.status >= 500) throw new Error("server_5xx");
+      const data = await res.json().catch(() => ({}));
+      return { res, data };
+    } catch (e) {
+      lastError = e;
+      if (attempt < APP_VERIFY_MAX_ATTEMPTS) await irenaSleepA(APP_VERIFY_RETRY_MS[attempt - 1]);
+    }
+  }
+  console.error("verify-app-token: all attempts failed:", lastError);
+  return { networkError: true };
+}
+
+async function irenaCheckAccess() {
+  irenaConsumeWebToken();
+  const cached = irenaGetStoredToken();
+  const initData = irenaGetInitData();
+
+  if (initData) {
+    // ТГ-путь: как в glutes и workout, verify-app-token отсюда недостижим
+    if (cached) return true;
+    const result = await irenaRequestVerify(initData);
+    if (result.networkError) { irenaShowBlocked("network_error"); return false; }
+    const { res, data } = result;
+    if (res.ok && data.ok && data.token) {
+      irenaStoreToken(data.token, data.expiresIn || 86400);
+      return true;
+    }
+    const reason = res.status === 403 ? "not_a_member" : res.status === 401 ? "invalid_init_data" : `error_${res.status}`;
+    irenaShowBlocked(reason);
+    return false;
+  }
+
+  // Веб: подпись, срок и подписку проверяет сервер
+  if (!cached) { irenaShowBlocked("no_web_token"); return false; }
+  irenaShowChecking(true);
+  const v = await irenaRequestVerifyToken(cached);
+  irenaShowChecking(false);
+  if (v.networkError) { irenaShowWebFail("network_error"); return false; }
+  if (v.res.ok && v.data.ok) return true;
+  try { localStorage.removeItem(IRENA_TOKEN_KEY); localStorage.removeItem(IRENA_TOKEN_EXPIRES_KEY); } catch {}
+  irenaShowBlocked("web_" + ((v.data && v.data.reason) || ("error_" + v.res.status)));
+  return false;
+}
+// ====== End access control ======
+
+// ====== Курс ======
+// Открытие сезона по дате opensAt из content.js, проверка на стороне браузера.
+// ?preview=1 открывает всё (для проверки перед датой).
+const PREVIEW = new URLSearchParams(location.search).get('preview') === '1';
+const PLAY_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+const LOCK_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+const DOC_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>';
+
+function isOpen(season) { return PREVIEW || Date.now() >= Date.parse(season.opensAt); }
+function openDateText(iso) {
+  try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', timeZone: 'Europe/Moscow' }).format(new Date(iso)); }
+  catch { return iso.slice(0, 10); }
+}
+function mmss(sec) { return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); }
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function lessonTitle(l) { return l.title || 'Урок'; }
+
+function lessonRow(l, kind) {
+  const row = el('div', 'row' + (l.kinescope ? '' : ' pending'));
+  const info = el('div', 'row-info');
+  info.append(el('div', 'row-kind', kind), el('div', 'row-name', lessonTitle(l)),
+    el('div', 'row-dur', l.kinescope ? l.duration : 'видео скоро появится'));
+  const ic = el('div', 'row-ic'); ic.innerHTML = PLAY_SVG;
+  row.append(info, ic);
+  if (l.kinescope) row.onclick = () => openLesson(l, kind);
+  return row;
+}
+function materialRow(m) {
+  const row = el('div', 'row');
+  const info = el('div', 'row-info');
+  info.append(el('div', 'row-kind', m.kind), el('div', 'row-name', m.title));
+  const ic = el('div', 'row-ic'); ic.innerHTML = DOC_SVG;
+  row.append(info, ic);
+  row.onclick = () => openMaterial(m);
+  return row;
+}
+
+function renderHome() {
+  const D = window.DOLGAYA;
+  const list = document.getElementById('listScreen');
+  list.innerHTML = '';
+
+  const intro = el('div', 'intro-card');
+  const t = el('div', 'row-info');
+  t.append(el('div', 'intro-label', 'Вступление · ' + D.intro.duration), el('div', 'intro-name', lessonTitle(D.intro)));
+  const ic = el('div', 'row-ic'); ic.innerHTML = PLAY_SVG;
+  intro.append(t, ic);
+  if (D.intro.kinescope) intro.onclick = () => openLesson(D.intro, 'Вступление');
+  else intro.style.opacity = '0.55';
+  list.append(intro);
+
+  // Раскрыт последний открытый сезон: новый сезон встречает её сам.
+  const lastOpen = D.seasons.filter(isOpen).pop();
+  D.seasons.forEach((s, i) => {
+    const open = isOpen(s);
+    const box = el('div', 'season' + (open ? '' : ' locked') + (s === lastOpen ? ' open' : ''));
+    const head = el('div', 'season-head');
+    const titles = el('div', 'season-titles');
+    titles.append(el('div', 'season-name', s.name));
+    if (s.desc) titles.append(el('div', 'season-desc', s.desc));
+    head.append(el('div', 'season-num', String(i + 1).padStart(2, '0')), titles);
+    if (open) {
+      head.append(el('div', 'season-chev'));
+      head.onclick = () => box.classList.toggle('open');
+      const body = el('div', 'season-body');
+      if (s.intro) body.append(el('div', 'season-intro', s.intro));
+      s.lessons.forEach((l, j) => body.append(lessonRow(l, 'Урок ' + (j + 1))));
+      s.materials.forEach((m) => body.append(materialRow(m)));
+      box.append(head, body);
+    } else {
+      const soon = el('div', 'season-soon');
+      soon.innerHTML = LOCK_SVG;
+      soon.append(el('div', null, 'откроется'), el('div', null, openDateText(s.opensAt)));
+      head.append(soon);
+      box.append(head);
+    }
+    list.append(box);
+  });
+}
+
+// Статья с telegra.ph: узлы {t, c} строятся через DOM, текст только через textContent.
+const ARTICLE_TAGS = new Set(['p', 'h3', 'h4', 'strong', 'em', 'b', 'i', 'blockquote', 'ol', 'ul', 'li', 'br']);
+function buildNodes(parent, nodes) {
+  (nodes || []).forEach((n) => {
+    if (typeof n === 'string') { parent.append(document.createTextNode(n)); return; }
+    if (!ARTICLE_TAGS.has(n.t)) { buildNodes(parent, n.c); return; }
+    const e = document.createElement(n.t);
+    buildNodes(e, n.c);
+    parent.append(e);
+  });
+}
+
+function showScreen(id) {
+  ['homeWrap', 'lessonScreen', 'materialScreen'].forEach((s) =>
+    document.getElementById(s).classList.toggle('active', s === id));
+  window.scrollTo(0, 0);
+  const tgBack = window.Telegram?.WebApp?.BackButton;
+  if (tgBack) {
+    tgBack.offClick(goHome);
+    if (id === 'homeWrap') tgBack.hide(); else { tgBack.onClick(goHome); tgBack.show(); }
+  }
+}
+function goHome() {
+  document.getElementById('videoFrame').src = '';
+  showScreen('homeWrap');
+}
+
+let currentLesson = null;
+function setVideo(l, startSec) {
+  const q = new URLSearchParams();
+  if (startSec) { q.set('t', String(startSec)); q.set('autoplay', '1'); }
+  const qs = q.toString();
+  document.getElementById('videoFrame').src = 'https://kinescope.io/embed/' + encodeURIComponent(l.kinescope) + (qs ? '?' + qs : '');
+}
+function openLesson(l, kind) {
+  currentLesson = l;
+  setVideo(l, 0);
+  document.getElementById('lessonKind').textContent = kind;
+  document.getElementById('lessonTitle').textContent = lessonTitle(l);
+  document.getElementById('lessonMeta').textContent = l.duration;
+  const about = document.getElementById('lessonAbout');
+  about.textContent = l.about || '';
+  about.style.display = l.about ? '' : 'none';
+  const toc = document.getElementById('lessonToc');
+  const list = document.getElementById('lessonTocList');
+  list.innerHTML = '';
+  (l.timecodes || []).forEach(([sec, name]) => {
+    const b = el('button', 'tc');
+    b.type = 'button';
+    b.append(el('b', null, mmss(sec)), el('span', null, name));
+    b.onclick = () => { setVideo(currentLesson, sec); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+    list.append(b);
+  });
+  toc.open = false;
+  toc.style.display = (l.timecodes || []).length ? '' : 'none';
+  showScreen('lessonScreen');
+}
+
+function openMaterial(m) {
+  document.getElementById('matKind').textContent = m.kind;
+  document.getElementById('matTitle').textContent = m.title;
+  const text = document.getElementById('matText');
+  text.textContent = m.text || '';
+  text.style.display = m.text ? '' : 'none';
+  const art = document.getElementById('matArticle');
+  art.innerHTML = '';
+  if (m.article) buildNodes(art, m.article.nodes);
+  const pdf = document.getElementById('matPdf');
+  if (m.pdf) {
+    pdf.style.display = '';
+    pdf.href = m.pdf;
+    // В Телеграме target=_blank в WebView мёртв: открываем через SDK.
+    pdf.onclick = (e) => {
+      const tg = window.Telegram?.WebApp;
+      if (irenaGetInitData() && tg?.openLink) { e.preventDefault(); tg.openLink(m.pdf); }
+    };
+    pdf.target = irenaGetInitData() ? '' : '_blank';
+  } else pdf.style.display = 'none';
+  showScreen('materialScreen');
+}
+
+function init() {
+  if (!window.DOLGAYA) throw new Error('content.js not loaded');
+  renderHome();
+  document.getElementById('loadingScreen').classList.remove('active');
+  document.getElementById('listScreen').classList.add('active');
+}
+
+try { window.Telegram?.WebApp?.ready(); window.Telegram?.WebApp?.expand(); } catch {}
+irenaCheckAccess().then((ok) => {
+  if (!ok) return;
+  if (!irenaGetInitData()) {
+    const ab = document.getElementById('appBackBtn');
+    if (ab) ab.style.display = 'inline-flex';
+  }
+  try { init(); } catch (e) { console.error("dolgaya init failed:", e); irenaShowBlocked("init_failed"); }
+});
+</script>
+</body>
+</html>
