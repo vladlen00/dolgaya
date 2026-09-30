@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="content.js?v=1"></script>
+<script src="content.js?v=2"></script>
 <style>
 /* Палитра снята с обложек курса: тёмный бордо, пыльная роза, беж. */
 :root{
@@ -22,14 +22,20 @@ html,body{width:100%;min-height:100%;background:var(--bg);color:var(--text);
 .serif{font-family:'Cormorant Garamond',serif;}
 
 /* Шапка */
-.cover{position:relative;padding:44px 24px 30px;overflow:hidden;
-  background:radial-gradient(120% 90% at 85% 10%,rgba(201,143,137,0.28),transparent 60%),
-             linear-gradient(180deg,#2a1a1d,var(--bg));}
-.cover-kicker{display:inline-block;padding:3px 12px;border-radius:20px;background:rgba(110,43,53,0.7);
-  font-size:0.72rem;font-weight:600;letter-spacing:0.04em;color:#f0d9d4;}
-.cover-title{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:2.6rem;line-height:1;
-  text-transform:uppercase;letter-spacing:0.02em;margin-top:16px;}
-.cover-sub{font-size:0.7rem;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-top:10px;}
+/* Шапка-фото. Кадр 3:2, лица слева на 30-75% высоты. Шапка выше пропорции кадра,
+   фото обрезается по бокам (object-position держит лица в кадре), а надписи стоят
+   в нижней полосе, под лицами, на тёмном градиенте. */
+.cover{position:relative;height:370px;overflow:hidden;background:var(--bg);
+  display:flex;flex-direction:column;justify-content:flex-end;padding:0 22px 22px;}
+.cover-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:18% 20%;}
+.cover::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(20,13,14,0.55) 0%,rgba(20,13,14,0) 22%,rgba(20,13,14,0) 58%,
+    rgba(20,13,14,0.82) 80%,var(--bg) 100%);}
+.cover-inner{position:relative;z-index:2;}
+.cover-kicker{font-size:0.66rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);}
+.cover-title{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.9rem,10.4vw,2.6rem);line-height:1;white-space:nowrap;
+  text-transform:uppercase;letter-spacing:0.02em;margin-top:8px;text-shadow:0 2px 16px rgba(0,0,0,0.5);}
+.cover-sub{font-size:0.7rem;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:rgba(243,236,232,0.75);margin-top:10px;}
 
 /* Загрузка */
 .loading{display:none;align-items:center;justify-content:center;flex:1;padding:48px;}
@@ -47,6 +53,7 @@ html,body{width:100%;min-height:100%;background:var(--bg);color:var(--text);
 .intro-card:active{opacity:.6;}
 .intro-label{font-size:0.68rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);}
 .intro-name{font-family:'Cormorant Garamond',serif;font-size:1.45rem;line-height:1.1;margin-top:4px;}
+.intro-desc{font-size:0.84rem;line-height:1.55;color:rgba(243,236,232,0.78);white-space:pre-line;margin-top:10px;}
 
 /* Сезон */
 .season{margin-top:14px;border-radius:18px;background:var(--card);border:1px solid var(--hair);overflow:hidden;}
@@ -120,9 +127,12 @@ details.toc[open] summary::after{transform:rotate(225deg);margin-top:3px;}
 
   <div class="screen active" id="homeWrap" style="padding:0">
     <header class="cover">
-      <span class="cover-kicker">Подарок участницам клуба</span>
-      <h1 class="cover-title">Игра в долгую</h1>
-      <div class="cover-sub">искусство быть вместе</div>
+      <img class="cover-photo" src="cover.jpg?v=1" alt="" width="1080" height="720">
+      <div class="cover-inner">
+        <div class="cover-kicker">Биохакинг отношений</div>
+        <h1 class="cover-title">Игра в долгую</h1>
+        <div class="cover-sub">искусство быть вместе</div>
+      </div>
     </header>
     <div class="loading active" id="loadingScreen"><div class="loading-dot"></div></div>
     <div class="screen" id="listScreen"></div>
@@ -404,10 +414,11 @@ function renderHome() {
 
   const intro = el('div', 'intro-card');
   const t = el('div', 'row-info');
-  t.append(el('div', 'intro-label', 'Вступление · ' + D.intro.duration), el('div', 'intro-name', lessonTitle(D.intro)));
+  t.append(el('div', 'intro-label', 'Начни отсюда · ' + D.intro.duration), el('div', 'intro-name', lessonTitle(D.intro)));
+  if (D.intro.about) t.append(el('div', 'intro-desc', D.intro.about));
   const ic = el('div', 'row-ic'); ic.innerHTML = PLAY_SVG;
   intro.append(t, ic);
-  if (D.intro.kinescope) intro.onclick = () => openLesson(D.intro, 'Вступление');
+  if (D.intro.kinescope) intro.onclick = () => openLesson(D.intro, 'Начни отсюда');
   else intro.style.opacity = '0.55';
   list.append(intro);
 
