@@ -449,6 +449,18 @@ function buildNodes(parent, nodes) {
   });
 }
 
+// Открыт из студии (ссылка studio?startapp=dolgaya, студия дописывает from=studio):
+// на главном экране кнопка «назад» Телеграма возвращает в студию.
+const FROM_STUDIO = new URLSearchParams(location.search).get('from') === 'studio' && !!irenaGetInitData();
+function goStudio() {
+  // Адрес студии с её ?v= кладёт сама студия перед переходом. hash несёт вход обратно.
+  let back = '/studio/';
+  try { back = sessionStorage.getItem('studio_return_url') || back; } catch {}
+  if (!back.startsWith('/')) back = '/studio/';
+  // Студия кнопкой «назад» не управляет: гасим её здесь, иначе висела бы без действия.
+  try { window.Telegram?.WebApp?.BackButton?.hide(); } catch {}
+  location.replace(back + location.hash);
+}
 function showScreen(id) {
   ['homeWrap', 'lessonScreen', 'materialScreen'].forEach((s) =>
     document.getElementById(s).classList.toggle('active', s === id));
@@ -456,7 +468,10 @@ function showScreen(id) {
   const tgBack = window.Telegram?.WebApp?.BackButton;
   if (tgBack) {
     tgBack.offClick(goHome);
-    if (id === 'homeWrap') tgBack.hide(); else { tgBack.onClick(goHome); tgBack.show(); }
+    tgBack.offClick(goStudio);
+    if (id !== 'homeWrap') { tgBack.onClick(goHome); tgBack.show(); }
+    else if (FROM_STUDIO) { tgBack.onClick(goStudio); tgBack.show(); }
+    else tgBack.hide();
   }
 }
 function goHome() {
@@ -523,6 +538,9 @@ function init() {
   renderHome();
   document.getElementById('loadingScreen').classList.remove('active');
   document.getElementById('listScreen').classList.add('active');
+  // Состояние кнопки «назад» живёт в самом Телеграме и переживает переход страниц:
+  // выставляем его явно, а не надеемся на значение по умолчанию.
+  showScreen('homeWrap');
 }
 
 try { window.Telegram?.WebApp?.ready(); window.Telegram?.WebApp?.expand(); } catch {}
