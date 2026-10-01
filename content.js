@@ -307,7 +307,7 @@ window.DOLGAYA = {
      "post": 767,
      "title": "Когда любовь приедается",
      "duration": "49:50",
-     "kinescope": null,
+     "kinescope": "qPg1bEkEcDuts2doHWqqoX",
      "timecodes": [
       [
        0,
@@ -367,7 +367,7 @@ window.DOLGAYA = {
      "post": 770,
      "title": "Отдаление - возможность стать ещё ближе",
      "duration": "30:30",
-     "kinescope": null,
+     "kinescope": "rFZHb1QCeeKMaMLeFuQAFt",
      "timecodes": [
       [
        0,
@@ -675,7 +675,7 @@ window.DOLGAYA = {
      "post": 1078,
      "title": "Этап кризиса или отвращения (5-8 лет)",
      "duration": "34:07",
-     "kinescope": null,
+     "kinescope": "cKpAmgApV7B3vvoZW4n7S7",
      "timecodes": [
       [
        0,
@@ -741,9 +741,9 @@ window.DOLGAYA = {
     },
     {
      "post": 1080,
-     "title": null,
+     "title": "Когда зима это конец",
      "duration": "22:22",
-     "kinescope": null,
+     "kinescope": "wxNgLCStKAhBoi5iLo5Hmt",
      "timecodes": [
       [
        0,
@@ -797,9 +797,9 @@ window.DOLGAYA = {
     },
     {
      "post": 1083,
-     "title": null,
+     "title": "Мягкая перезагрузка внутри пары",
      "duration": "27:24",
-     "kinescope": null,
+     "kinescope": "oyZBd8sQzkccuR1w5axpe9",
      "timecodes": [
       [
        0,
@@ -1695,9 +1695,9 @@ window.DOLGAYA = {
    "lessons": [
     {
      "post": 1204,
-     "title": null,
+     "title": "С тобой всё окей, со мной всё окей",
      "duration": "42:57",
-     "kinescope": null,
+     "kinescope": "8GAK4vrzngNjSVz7vtzVkS",
      "timecodes": [
       [
        0,
@@ -3315,9 +3315,9 @@ window.DOLGAYA = {
    "lessons": [
     {
      "post": 1359,
-     "title": null,
+     "title": "Равное партнёрство. Сотрудничество",
      "duration": "50:04",
-     "kinescope": null,
+     "kinescope": "hm72Se42RE9Yu863ad25iC",
      "timecodes": [
       [
        0,
@@ -5072,9 +5072,9 @@ window.DOLGAYA = {
    "lessons": [
     {
      "post": 1476,
-     "title": null,
+     "title": "Зрелая любовь",
      "duration": "8:48",
-     "kinescope": null,
+     "kinescope": "4jmoFZswDmZw4eKMLCP7gQ",
      "timecodes": [],
      "about": "Дорогие мои 💋💋💋 наше обучение подошло к концу.\n\nСпасибо вам за доверие, за участие, за каждый шаг, который вы уже сделали на этом пути.\nЯ верю, что знания, которые вы получили, способны сделать ваши отношения такими как вы хотите✨\n\nВпереди осталось маленькое заключительное видео, чтобы передать вам, что же это за такая истиная любовь к которой мы все так стремимся?! ☺️\n\nИ я очень надеюсь, что оно вдохновит вас на создание длительных отношений, в которых будет страсть, уважение и настоящая близость ❤️‍🔥"
     }
